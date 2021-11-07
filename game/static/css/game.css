@@ -6,7 +6,7 @@
     user-select: none;
 }
 
-.ac-game-menu-field{
+.ac-game-menu-field {
     width: 20vw;
     position: relative;
     top: 30vh;
@@ -29,4 +29,10 @@
 .ac-game-menu-field-item:hover{
     transform: scale(1.2);
     transform: 100ms;
+}
+
+.ac-game-playground {
+    width: 100%;
+    height: 100%;
+    user-select: none;
 }
