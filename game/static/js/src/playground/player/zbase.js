@@ -19,6 +19,10 @@ class Player extends AcGameObject {
     start() {
         if (this.is_me) {
             this.add_listening_events();
+        } else {
+            let tx = Math.random() * this.playground.width;
+            let ty = Math.random() * this.playground.height;
+            this.move_to(tx, ty);
         }
     }
 
@@ -77,6 +81,11 @@ class Player extends AcGameObject {
         if (this.move_length < this.eps) {
             this.vx = this.vy = 0;
             this.move_length = 0;
+            if (!this.is_me) {
+                 let tx = Math.random() * this.playground.width;
+                 let ty = Math.random() * this.playground.height;
+                this. move_to(tx, ty);
+            }
         } else {
             let moved = Math.min(this.move_length, this.speed * this.timedelta / 1000);
             this.x += moved * this.vx;
