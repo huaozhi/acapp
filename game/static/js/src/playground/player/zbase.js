@@ -18,6 +18,8 @@ class Player extends AcGameObject {
         this.eps = 1;
         this.cur_skill = null;
         this.friction = 0.9;
+
+        this.spent_time = 0;
     }
 
     start() {
@@ -41,7 +43,7 @@ class Player extends AcGameObject {
             if(e.which === 3) {
                 outer.move_to(e.clientX, e.clientY);
             } else if(e.which === 1) {
-                if (outer.cur_skill === "fireball") {
+                if (outer.cur_skill === "fireball" && outer.radius >= 10) {
                     outer.shoot_fireball(e.clientX, e.clientY);
                 }
                 outer.cur_skill = null;
@@ -104,6 +106,16 @@ class Player extends AcGameObject {
     }
 
     update() {
+        this.spent_time += this.timedelta / 1000;
+        if (!this.is_me && this.spent_time > 4 && Math.random() < 1 / 300.0) {
+            
+            let player = this.playground.players[Math.floor(Math.random() * this.playground.players.length)];
+            
+            let tx = player.x + player.speed * player.vx * this.timedelta / 1000 * 0.3;
+            let ty = player.y + player.speed * player.vy * this.timedelta / 1000 * 0.3;
+            if (this !== player)
+                this.shoot_fireball(tx, ty);
+        }
         if (this.damage_speed > 10) {
             this.vx = this.vy = 0;
             this.move_length = 0;
@@ -127,6 +139,14 @@ class Player extends AcGameObject {
             }
         }
         this.render();
+    }
+
+    on_destroy() {
+        for (let i = 0;  i < this.playground.players.length; i++) {
+            if (this.playground.players[i] === this) {
+                this.playground.players.splice(i, 1);
+            }
+        }
     }
 
     render() {
