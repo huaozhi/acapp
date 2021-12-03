@@ -10,6 +10,7 @@ class AcGameMenu{
     </div>
 </div>
 `);
+        this.$menu.hide();
         this.root.$ac_game.append(this.$menu);
         this.$single_mode = this.$menu.find(".ac-game-menu-field-item-single-mode");
         this.$multi_mode = this.$menu.find(".ac-game-menu-field-item-multi-mode");
@@ -180,6 +181,11 @@ class Player extends AcGameObject {
         this.friction = 0.9;
 
         this.spent_time = 0;
+        if (this.is_me) {
+            this.img = new Image();
+            this.img.src = this.playground.root.settings.photo;
+            console.log(this.img.src);
+        }
     }
 
     start() {
@@ -270,9 +276,9 @@ class Player extends AcGameObject {
     update() {
         this.spent_time += this.timedelta / 1000;
         if (!this.is_me && this.spent_time > 4 && Math.random() < 1 / 300.0) {
-            
+
             let player = this.playground.players[Math.floor(Math.random() * this.playground.players.length)];
-            
+
             let tx = player.x + player.speed * player.vx * this.timedelta / 1000 * 0.3;
             let ty = player.y + player.speed * player.vy * this.timedelta / 1000 * 0.3;
             if (this !== player)
@@ -312,10 +318,20 @@ class Player extends AcGameObject {
     }
 
     render() {
-        this.ctx.beginPath();
-        this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        this.ctx.fillStyle = this.color;
-        this.ctx.fill();
+        if (this.is_me) {
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+            this.ctx.stroke();
+            this.ctx.clip();
+            this.ctx.drawImage(this.img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+            this.ctx.restore();
+        } else {
+            this.ctx.beginPath();
+            this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+            this.ctx.fillStyle = this.color;
+            this.ctx.fill();
+        }
     }
 }
 class FireBall extends AcGameObject {
@@ -420,10 +436,67 @@ class AcGamePlayground{
         this.$playground.hide();
     }
 }
+class Settings {
+    constructor(root) {
+        this.root = root;
+        this.username = "";
+        this.photo = "";
+        this.platform = "WEB";
+        if (this.root.AcWingOS) this.platform = "ACAPP";
+
+        this.start();
+    }
+
+    start() {
+        this.getinfo();
+    }
+
+    login() {  
+
+    }
+
+    register() {
+
+    }
+    getinfo() {
+        let outer = this;
+        $.ajax({
+            url: "https://app242.acapp.acwing.com.cn/settings/getinfo/",
+            type: "GET",
+            data: {
+                platform: outer.platform,
+            },
+            success: function(resp) {
+                console.log(resp);
+                if (resp.result === "success") {
+                    outer.username = resp.username;
+                    outer.photo = resp.photo;
+                    outer.hide();
+                    outer.root.menu.show();
+                } else {
+                    outer.login();
+                }
+            }
+        });
+    }
+
+
+    hide() {
+        
+    }
+
+    show() {
+    }
+
+}
 export class AcGame{
-    constructor(id){
+    constructor(id, AcWingOS){
         this.id=id;
         this.$ac_game = $('#' + id);
+        this.AcWingOS = AcWingOS;
+        console.log('ACWingOS is',this.AcWingOS);
+        this.settings = new Settings(this);
+
         this.menu = new AcGameMenu(this);
         this.playground = new AcGamePlayground(this);
 
